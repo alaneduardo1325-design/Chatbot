@@ -3,242 +3,203 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Experto Legal Laboral</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
             background: #f4f4f4;
         }
 
+        /* ===== LAYOUT ===== */
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
         .sidebar {
-            width: 240px;
+            width: 230px;
             background: #2c3e50;
             color: white;
+            padding: 20px;
         }
 
         .sidebar h2 {
             text-align: center;
-            padding: 15px;
-            background: #1a252f;
-            margin: 0;
         }
 
-        .sidebar button {
-            width: 100%;
-            background: none;
-            border: none;
+        .sidebar a {
+            display: block;
             color: white;
-            padding: 15px;
-            text-align: left;
-            cursor: pointer;
+            text-decoration: none;
+            padding: 10px;
+            margin: 5px 0;
+            background: #34495e;
+            border-radius: 5px;
         }
 
-        .sidebar button:hover {
-            background: #34495e;
+        .sidebar a:hover {
+            background: #1abc9c;
         }
 
         .main {
             flex: 1;
-            padding: 20px;
+            padding: 30px;
             overflow-y: auto;
         }
 
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 600px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, .2);
-        }
-
+        /* ===== FORM ===== */
         select,
-        input,
         button {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-top: 10px;
         }
 
-        button.primary {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
+        .question {
+            margin-top: 15px;
         }
 
-        .result img {
-            width: 100%;
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <h2>⚖️ LegalApp</h2>
-        <button onclick="showView('expertView')">🧠 Diagnóstico</button>
-        <button onclick="showView('profileView')">👤 Perfil</button>
-        <button onclick="showView('loginView')">🔐 Login</button>
-    </div>
+    <div class="container">
 
-    <!-- MAIN -->
-    <div class="main">
+        <!-- ===== MENU IZQUIERDO ===== -->
+        <div class="sidebar">
+            <h2>⚖️ LegalApp</h2>
+            <a href="#">Diagnóstico</a>
+            <a href="#">Perfil</a>
+            <a href="#">Configuración</a>
+            <a href="#">Iniciar Sesión</a>
+        </div>
 
-        <!-- SISTEMA EXPERTO -->
-        <div id="expertView" class="view active">
-            <h2>🧠 Diagnóstico Legal Laboral</h2>
+        <!-- ===== CONTENIDO ===== -->
+        <div class="main">
+            <h1>Sistema Experto de Diagnóstico Laboral</h1>
+            <p>Seleccione una categoría y responda el cuestionario.</p>
 
-            <div class="card">
-                <label>Categoría:</label>
-                <select id="categorySelect" onchange="loadCases()">
-                    <option value="">Seleccione</option>
-                    <option value="despido">Despido</option>
-                    <option value="salario">Salarios</option>
-                    <option value="jornada">Jornada laboral</option>
-                    <option value="prestaciones">Prestaciones</option>
-                    <option value="acoso">Acoso / Discriminación</option>
-                    <option value="contrato">Contrato</option>
-                    <option value="riesgos">Riesgos de trabajo</option>
-                    <option value="seguridad">Seguridad e higiene</option>
-                    <option value="licencias">Licencias legales</option>
-                </select>
+            <!-- CATEGORIA -->
+            <label>Categoría</label>
+            <select id="categorySelect" onchange="loadCases()">
+                <option value="">Seleccione una categoría</option>
+                <option value="Despido">Despido</option>
+                <option value="Pagos">Pagos</option>
+                <option value="Prestaciones">Prestaciones</option>
+                <option value="Ambiente">Ambiente Laboral</option>
+                <option value="Contrato">Contrato</option>
+                <option value="Seguridad">Seguridad</option>
+                <option value="Licencias">Licencias</option>
+            </select>
 
-                <label>Caso:</label>
+            <!-- CASO (OCULTO AL INICIO) -->
+            <div id="caseContainer" style="display:none;">
+                <label>Caso</label>
                 <select id="caseSelect" onchange="loadForm()">
                     <option value="">Seleccione un caso</option>
                 </select>
-
-                <div id="dynamicForm"></div>
-
-                <button class="primary" onclick="diagnosticar()">Diagnosticar</button>
-
-                <div class="result" id="resultArea"></div>
             </div>
-        </div>
 
-        <!-- PERFIL -->
-        <div id="profileView" class="view">
-            <h2>👤 Perfil - Historial</h2>
-            <div id="historyArea"></div>
-        </div>
+            <!-- FORMULARIO DINÁMICO -->
+            <div id="dynamicForm"></div>
 
-        <!-- LOGIN -->
-        <div id="loginView" class="view">
-            <h2>🔐 Iniciar Sesión</h2>
-            <input id="userInput" placeholder="Usuario">
-            <button class="primary" onclick="login()">Entrar</button>
+            <!-- RESULTADO -->
+            <div id="result" class="result" style="display:none;"></div>
         </div>
-
     </div>
 
     <script>
-        /* ===== NAVEGACIÓN ===== */
-        function showView(id) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        /* ===== LOGIN ===== */
-        let currentUser = localStorage.getItem("currentUser");
-
-        function login() {
-            const u = document.getElementById("userInput").value.trim();
-            if (!u) return alert("Ingrese un usuario");
-            currentUser = u;
-            localStorage.setItem("currentUser", u);
-            loadHistory();
-            showView("profileView");
-        }
-
         /* ===== BASE DE CONOCIMIENTO ===== */
         const knowledgeBase = {
-            despido: {
+            Despido: {
                 "Despido injustificado": [
-                    "¿Fue despedido sin aviso de rescisión?",
-                    "¿No se comprobó falta grave?"
+                    "¿Fue despedido sin aviso?",
+                    "¿Le obligaron a firmar renuncia?",
+                    "¿No le comprobaron una falta grave?"
+                ]
+            },
+            Pagos: {
+                "Falta de pago de salarios": [
+                    "¿Le pagan incompleto?",
+                    "¿Le deben salarios?",
+                    "¿Le retienen el sueldo?"
                 ],
-                "Renuncia forzada": [
-                    "¿Fue presionado para renunciar?",
-                    "¿Firmó documentos bajo presión?"
-                ]
-            },
-            salario: {
-                "Falta de pago de salario": [
-                    "¿Recibe su salario incompleto?",
-                    "¿Hay retrasos frecuentes en el pago?"
-                ]
-            },
-            jornada: {
-                "Horas extra no pagadas": [
-                    "¿Trabaja más de 8 horas?",
+                "Horas extras no pagadas": [
+                    "¿Trabaja más de la jornada legal?",
                     "¿No le pagan horas extra?"
                 ]
             },
-            prestaciones: {
+            Prestaciones: {
                 "Incumplimiento de prestaciones": [
                     "¿No recibe aguinaldo?",
                     "¿No tiene vacaciones?",
                     "¿No está afiliado al IMSS?"
                 ]
             },
-            acoso: {
+            Ambiente: {
                 "Acoso laboral": [
-                    "¿Sufre humillaciones constantes?",
-                    "¿Recibe presión psicológica?"
+                    "¿Recibe humillaciones?",
+                    "¿Tiene presión psicológica?",
+                    "¿Lo aíslan laboralmente?"
                 ],
-                "Discriminación laboral": [
-                    "¿Ha sido discriminado por algún motivo?"
+                "Discriminación": [
+                    "¿Ha sido discriminado?",
+                    "¿Por género, edad o condición?"
                 ]
             },
-            contrato: {
+            Contrato: {
                 "Contrato irregular": [
                     "¿No tiene contrato escrito?",
-                    "¿Está contratado por honorarios?"
+                    "¿Usan honorarios para evitar prestaciones?"
+                ],
+                "Renuncia forzada": [
+                    "¿Lo presionaron para renunciar?",
+                    "¿Firmó documentos en blanco?"
                 ]
             },
-            riesgos: {
-                "Riesgo de trabajo": [
+            Seguridad: {
+                "Riesgos de trabajo": [
                     "¿Sufrió accidente laboral?",
-                    "¿El patrón se negó a reconocerlo?"
-                ]
-            },
-            seguridad: {
+                    "¿El patrón no lo reconoce?"
+                ],
                 "Falta de seguridad e higiene": [
-                    "¿No cuenta con equipo de protección?",
+                    "¿No hay equipo de protección?",
                     "¿Las instalaciones son peligrosas?"
                 ]
             },
-            licencias: {
-                "Licencias legales negadas": [
-                    "¿Le negaron licencia médica o parental?"
+            Licencias: {
+                "Negativa de licencias legales": [
+                    "¿Le negaron incapacidad?",
+                    "¿Le negaron licencia legal?"
                 ]
             }
         };
 
-        let answers = [];
-
         /* ===== CARGAR CASOS ===== */
         function loadCases() {
-            const category = document.getElementById("categorySelect").value;
+            const category = categorySelect.value;
             const caseSelect = document.getElementById("caseSelect");
-            caseSelect.innerHTML = '<option value="">Seleccione un caso</option>';
+            const caseContainer = document.getElementById("caseContainer");
             document.getElementById("dynamicForm").innerHTML = "";
+            document.getElementById("result").style.display = "none";
 
-            if (!knowledgeBase[category]) return;
+            if (!category) {
+                caseContainer.style.display = "none";
+                return;
+            }
+
+            caseContainer.style.display = "block";
+            caseSelect.innerHTML = '<option value="">Seleccione un caso</option>';
 
             Object.keys(knowledgeBase[category]).forEach(c => {
                 caseSelect.innerHTML += `<option value="${c}">${c}</option>`;
@@ -247,79 +208,52 @@
 
         /* ===== FORMULARIO DINÁMICO ===== */
         function loadForm() {
-            answers = [];
-            const category = document.getElementById("categorySelect").value;
-            const selectedCase = document.getElementById("caseSelect").value;
-            const formDiv = document.getElementById("dynamicForm");
-            formDiv.innerHTML = "";
+            const category = categorySelect.value;
+            const caseName = caseSelect.value;
+            const form = document.getElementById("dynamicForm");
+            form.innerHTML = "";
 
-            if (!selectedCase) return;
+            if (!caseName) return;
 
-            knowledgeBase[category][selectedCase].forEach((q, i) => {
-                formDiv.innerHTML += `
-            <label>${q}</label>
-            <select onchange="answers[${i}] = this.value">
-                <option value="">Seleccione</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-            </select>
+            knowledgeBase[category][caseName].forEach((q, i) => {
+                form.innerHTML += `
+            <div class="question">
+                <label>${q}</label>
+                <select id="q${i}">
+                    <option value="">Seleccione</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
         `;
             });
+
+            form.innerHTML += `<button onclick="diagnosticar('${caseName}')">Diagnosticar</button>`;
         }
 
         /* ===== MOTOR DE INFERENCIAS ===== */
-        function diagnosticar() {
-            if (!currentUser) return alert("Debe iniciar sesión");
-
-            const positivos = answers.filter(a => a === "si").length;
-            const selectedCase = document.getElementById("caseSelect").value;
-
-            let texto = positivos > 0
-                ? `⚖️ Diagnóstico: Posible ${selectedCase}`
-                : "✅ No se detecta conflicto legal relevante";
-
-            generarImagen(texto);
-        }
-
-        /* ===== GENERAR IMAGEN ===== */
-        function generarImagen(texto) {
-            const canvas = document.createElement("canvas");
-            canvas.width = 500;
-            canvas.height = 200;
-            const ctx = canvas.getContext("2d");
-
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#000";
-            ctx.font = "18px Arial";
-            ctx.fillText("Resultado del Diagnóstico Legal", 80, 40);
-            ctx.font = "16px Arial";
-            ctx.fillText(texto, 20, 100);
-
-            guardarHistorial(canvas.toDataURL(), texto);
-        }
-
-        /* ===== HISTORIAL ===== */
-        function guardarHistorial(img, texto) {
-            let history = JSON.parse(localStorage.getItem(currentUser)) || [];
-            history.push({ fecha: new Date().toLocaleString(), img, texto });
-            localStorage.setItem(currentUser, JSON.stringify(history));
-            loadHistory();
-            showView("profileView");
-        }
-
-        function loadHistory() {
-            const div = document.getElementById("historyArea");
-            div.innerHTML = "";
-            (JSON.parse(localStorage.getItem(currentUser)) || []).forEach(h => {
-                div.innerHTML += `
-            <div class="card">
-                <b>${h.fecha}</b><br>
-                <img src="${h.img}">
-                <p>${h.texto}</p>
-            </div><br>
-        `;
+        function diagnosticar(caso) {
+            let positivos = 0;
+            document.querySelectorAll("#dynamicForm select").forEach(s => {
+                if (s.value === "si") positivos++;
             });
+
+            const result = document.getElementById("result");
+            result.style.display = "block";
+
+            if (positivos >= 2) {
+                result.innerHTML = `
+            <h3>⚖️ Diagnóstico Legal</h3>
+            <p><b>${caso}</b></p>
+            <p>Se detectan indicios claros de conflicto laboral.</p>
+            <p>📌 Recomendación: Acudir a la Procuraduría de la Defensa del Trabajo.</p>
+        `;
+            } else {
+                result.innerHTML = `
+            <h3>ℹ️ Resultado</h3>
+            <p>No se detectan suficientes elementos para un conflicto grave.</p>
+        `;
+            }
         }
     </script>
 
