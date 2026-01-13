@@ -3,260 +3,471 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Sistema Experto Legal Laboral</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalApp - Sistema Experto</title>
 
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+        /* VARIABLES DE DISEÑO (PERSONALIZABLES) */
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e293b;
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --text: #0f172a;
+            --radius: 14px;
         }
 
-        /* ===== LAYOUT ===== */
-        .container {
-            display: flex;
+        /* MODO OSCURO */
+        body.dark {
+            --bg: #020617;
+            --panel: #1e293b;
+            --text: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s, font-size 0.2s;
+            max-width: 100%;
+            /* Personalizable en settings */
+        }
+
+        /* ===== AUTENTICACIÓN ===== */
+        .auth {
             height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-box {
+            background: var(--panel);
+            padding: 40px;
+            width: 400px;
+            border-radius: var(--radius);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* ===== LAYOUT PRINCIPAL ===== */
+        .container {
+            display: none;
+            /* Se activa al loguear */
+            height: 100vh;
+            flex-direction: row;
         }
 
         .sidebar {
-            width: 230px;
-            background: #2c3e50;
+            width: 260px;
+            background: var(--secondary);
             color: white;
-            padding: 20px;
-        }
-
-        .sidebar h2 {
-            text-align: center;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
         }
 
         .sidebar a {
             display: block;
-            color: white;
+            padding: 12px;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
             text-decoration: none;
-            padding: 10px;
-            margin: 5px 0;
-            background: #34495e;
-            border-radius: 5px;
+            color: white;
+            transition: 0.2s;
         }
 
         .sidebar a:hover {
-            background: #1abc9c;
+            background: var(--primary);
         }
 
         .main {
             flex: 1;
-            padding: 30px;
+            padding: 40px;
             overflow-y: auto;
         }
 
-        /* ===== FORM ===== */
+        /* ===== COMPONENTES ===== */
+        .card {
+            background: var(--panel);
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: 0.3s;
+        }
+
+        .setting {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        input,
         select,
         button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
-        }
-
-        .question {
-            margin-top: 15px;
-        }
-
-        .result {
-            margin-top: 25px;
-            padding: 20px;
-            background: #ecf0f1;
             border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 15px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .profile-img {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            margin: 0 auto 15px;
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 15px;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
+    <div class="auth" id="auth">
+        <div class="auth-box">
+            <h1 style="color: var(--primary)">⚖️ LegalApp</h1>
+            <p>Sistema Experto de Diagnóstico</p>
 
-        <!-- ===== MENU IZQUIERDO ===== -->
-        <div class="sidebar">
-            <h2>⚖️ LegalApp</h2>
-            <a href="#">Diagnóstico</a>
-            <a href="#">Perfil</a>
-            <a href="#">Configuración</a>
-            <a href="#">Iniciar Sesión</a>
-        </div>
-
-        <!-- ===== CONTENIDO ===== -->
-        <div class="main">
-            <h1>Sistema Experto de Diagnóstico Laboral</h1>
-            <p>Seleccione una categoría y responda el cuestionario.</p>
-
-            <!-- CATEGORIA -->
-            <label>Categoría</label>
-            <select id="categorySelect" onchange="loadCases()">
-                <option value="">Seleccione una categoría</option>
-                <option value="Despido">Despido</option>
-                <option value="Pagos">Pagos</option>
-                <option value="Prestaciones">Prestaciones</option>
-                <option value="Ambiente">Ambiente Laboral</option>
-                <option value="Contrato">Contrato</option>
-                <option value="Seguridad">Seguridad</option>
-                <option value="Licencias">Licencias</option>
-            </select>
-
-            <!-- CASO (OCULTO AL INICIO) -->
-            <div id="caseContainer" style="display:none;">
-                <label>Caso</label>
-                <select id="caseSelect" onchange="loadForm()">
-                    <option value="">Seleccione un caso</option>
-                </select>
+            <div id="authMenu">
+                <button onclick="showSection('loginForm')">Iniciar Sesión</button>
+                <button style="background: var(--secondary)" onclick="showSection('registerForm')">Crear Cuenta</button>
             </div>
 
-            <!-- FORMULARIO DINÁMICO -->
-            <div id="dynamicForm"></div>
+            <div id="loginForm" class="hidden">
+                <input id="loginUser" placeholder="Usuario">
+                <input id="loginPass" type="password" placeholder="Contraseña">
+                <button onclick="login()">Entrar</button>
+                <a onclick="location.reload()"
+                    style="font-size: 12px; cursor:pointer; display:block; margin-top:10px;">Volver</a>
+            </div>
 
-            <!-- RESULTADO -->
-            <div id="result" class="result" style="display:none;"></div>
+            <div id="registerForm" class="hidden">
+                <input id="name" placeholder="Nombre completo">
+                <input id="email" placeholder="Correo electrónico">
+                <input id="regUser" placeholder="Crea un usuario">
+                <input id="regPass" type="password" placeholder="Contraseña">
+                <button onclick="register()">Registrarse</button>
+                <a onclick="location.reload()"
+                    style="font-size: 12px; cursor:pointer; display:block; margin-top:10px;">Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="app">
+        <div class="sidebar" id="sidebar">
+            <h2 style="font-size: 20px;">⚖️ Panel Legal</h2>
+            <hr style="opacity: 0.1; width: 100%;">
+            <a onclick="diagnosis()">📋 Nuevo Diagnóstico</a>
+            <a onclick="profile()">👤 Mi Perfil</a>
+            <a onclick="settings()">⚙️ Configuración</a>
+            <a onclick="logout()" style="margin-top: auto; background: #ef4444;">Cerrar Sesión</a>
+        </div>
+
+        <div class="main" id="content">
         </div>
     </div>
 
     <script>
-        /* ===== BASE DE CONOCIMIENTO ===== */
-        const knowledgeBase = {
-            Despido: {
-                "Despido injustificado": [
-                    "¿Fue despedido sin aviso?",
-                    "¿Le obligaron a firmar renuncia?",
-                    "¿No le comprobaron una falta grave?"
-                ]
-            },
-            Pagos: {
-                "Falta de pago de salarios": [
-                    "¿Le pagan incompleto?",
-                    "¿Le deben salarios?",
-                    "¿Le retienen el sueldo?"
+        const $ = id => document.getElementById(id);
+
+        /* ===== BASE DE CONOCIMIENTO (KB) ===== */
+        const kb = {
+            "Laboral": {
+                "Despido Injustificado": [
+                    { q: "¿Trabajó más de 3 meses?", w: 2 },
+                    { q: "¿Le notificaron por escrito?", w: 3 },
+                    { q: "¿Fue por causa ajena a su conducta?", w: 5 },
+                    { q: "¿Tiene pruebas/testigos?", w: 4 }
                 ],
-                "Horas extras no pagadas": [
-                    "¿Trabaja más de la jornada legal?",
-                    "¿No le pagan horas extra?"
+                "Acoso Laboral": [
+                    { q: "¿Es una conducta repetitiva?", w: 5 },
+                    { q: "¿Afecta su salud mental?", w: 3 },
+                    { q: "¿Reportó a RRHH anteriormente?", w: 2 }
                 ]
             },
-            Prestaciones: {
-                "Incumplimiento de prestaciones": [
-                    "¿No recibe aguinaldo?",
-                    "¿No tiene vacaciones?",
-                    "¿No está afiliado al IMSS?"
-                ]
-            },
-            Ambiente: {
-                "Acoso laboral": [
-                    "¿Recibe humillaciones?",
-                    "¿Tiene presión psicológica?",
-                    "¿Lo aíslan laboralmente?"
-                ],
-                "Discriminación": [
-                    "¿Ha sido discriminado?",
-                    "¿Por género, edad o condición?"
-                ]
-            },
-            Contrato: {
-                "Contrato irregular": [
-                    "¿No tiene contrato escrito?",
-                    "¿Usan honorarios para evitar prestaciones?"
-                ],
-                "Renuncia forzada": [
-                    "¿Lo presionaron para renunciar?",
-                    "¿Firmó documentos en blanco?"
-                ]
-            },
-            Seguridad: {
-                "Riesgos de trabajo": [
-                    "¿Sufrió accidente laboral?",
-                    "¿El patrón no lo reconoce?"
-                ],
-                "Falta de seguridad e higiene": [
-                    "¿No hay equipo de protección?",
-                    "¿Las instalaciones son peligrosas?"
-                ]
-            },
-            Licencias: {
-                "Negativa de licencias legales": [
-                    "¿Le negaron incapacidad?",
-                    "¿Le negaron licencia legal?"
+            "Civil": {
+                "Incumplimiento de Contrato": [
+                    { q: "¿Hay un contrato firmado?", w: 5 },
+                    { q: "¿Se venció el plazo acordado?", w: 4 },
+                    { q: "¿Hubo daño económico?", w: 3 }
                 ]
             }
         };
 
-        /* ===== CARGAR CASOS ===== */
+        /* ===== LÓGICA DE USUARIOS ===== */
+        function showSection(id) {
+            $("authMenu").classList.add("hidden");
+            $("loginForm").classList.add("hidden");
+            $("registerForm").classList.add("hidden");
+            $(id).classList.remove("hidden");
+        }
+
+        function register() {
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            const u = $("regUser").value.trim();
+            if (users.find(x => x.username === u)) return alert("El usuario ya existe");
+
+            const newUser = {
+                name: $("name").value,
+                email: $("email").value,
+                username: u,
+                password: $("regPass").value,
+                photo: null,
+                history: []
+            };
+            users.push(newUser);
+            localStorage.setItem("users", JSON.stringify(users));
+            localStorage.setItem("activeUser", JSON.stringify(newUser));
+            location.reload();
+        }
+
+        function login() {
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            const u = $("loginUser").value;
+            const p = $("loginPass").value;
+            const user = users.find(x => x.username === u && x.password === p);
+
+            if (!user) return alert("Datos incorrectos");
+            localStorage.setItem("activeUser", JSON.stringify(user));
+            showApp();
+        }
+
+        function logout() {
+            localStorage.removeItem("activeUser");
+            location.reload();
+        }
+
+        function showApp() {
+            $("auth").style.display = "none";
+            $("app").style.display = "flex";
+            diagnosis();
+        }
+
+        /* ===== SISTEMA DE DIAGNÓSTICO ===== */
+        function diagnosis() {
+            $("content").innerHTML = `
+                <h2>🩺 Nuevo Diagnóstico Legal</h2>
+                <div class="card">
+                    <label>Área Legal:</label>
+                    <select id="cat" onchange="loadCases()">
+                        <option value="">-- Seleccionar --</option>
+                        ${Object.keys(kb).map(x => `<option>${x}</option>`).join("")}
+                    </select>
+                    <div id="caseBox" class="hidden">
+                        <label>Caso Específico:</label>
+                        <select id="caso" onchange="loadQs()"></select>
+                    </div>
+                </div>
+                <div id="qs" class="card hidden"></div>
+                <div id="res"></div>
+            `;
+        }
+
         function loadCases() {
-            const category = categorySelect.value;
-            const caseSelect = document.getElementById("caseSelect");
-            const caseContainer = document.getElementById("caseContainer");
-            document.getElementById("dynamicForm").innerHTML = "";
-            document.getElementById("result").style.display = "none";
-
-            if (!category) {
-                caseContainer.style.display = "none";
-                return;
-            }
-
-            caseContainer.style.display = "block";
-            caseSelect.innerHTML = '<option value="">Seleccione un caso</option>';
-
-            Object.keys(knowledgeBase[category]).forEach(c => {
-                caseSelect.innerHTML += `<option value="${c}">${c}</option>`;
-            });
+            const cat = $("cat").value;
+            if (!cat) return $("caseBox").classList.add("hidden");
+            $("caseBox").classList.remove("hidden");
+            $("caso").innerHTML = '<option value="">-- Seleccionar caso --</option>' +
+                Object.keys(kb[cat]).map(x => `<option>${x}</option>`).join("");
         }
 
-        /* ===== FORMULARIO DINÁMICO ===== */
-        function loadForm() {
-            const category = categorySelect.value;
-            const caseName = caseSelect.value;
-            const form = document.getElementById("dynamicForm");
-            form.innerHTML = "";
+        function loadQs() {
+            const cat = $("cat").value;
+            const caso = $("caso").value;
+            if (!caso) return $("qs").classList.add("hidden");
 
-            if (!caseName) return;
-
-            knowledgeBase[category][caseName].forEach((q, i) => {
-                form.innerHTML += `
-            <div class="question">
-                <label>${q}</label>
-                <select id="q${i}">
-                    <option value="">Seleccione</option>
-                    <option value="si">Sí</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
-        `;
+            $("qs").classList.remove("hidden");
+            $("qs").innerHTML = `<h3>Responda con honestidad:</h3>`;
+            kb[cat][caso].forEach((q, i) => {
+                $("qs").innerHTML += `
+                    <div style="margin-bottom:10px">
+                        <label>${q.q}</label>
+                        <select id="q${i}">
+                            <option value="0">No / Falso</option>
+                            <option value="1">Sí / Verdadero</option>
+                        </select>
+                    </div>`;
             });
-
-            form.innerHTML += `<button onclick="diagnosticar('${caseName}')">Diagnosticar</button>`;
+            $("qs").innerHTML += `<button onclick="infer()">Generar Diagnóstico</button>`;
         }
 
-        /* ===== MOTOR DE INFERENCIAS ===== */
-        function diagnosticar(caso) {
-            let positivos = 0;
-            document.querySelectorAll("#dynamicForm select").forEach(s => {
-                if (s.value === "si") positivos++;
+        function infer() {
+            const cat = $("cat").value;
+            const caso = $("caso").value;
+            let s = 0, maxS = 0;
+
+            kb[cat][caso].forEach((q, i) => {
+                s += (parseInt($(`q${i}`).value) * q.w);
+                maxS += q.w;
             });
 
-            const result = document.getElementById("result");
-            result.style.display = "block";
+            const esProcedente = s > (maxS / 2);
+            const statusText = esProcedente ? "PROCEDENTE" : "NO PROCEDENTE";
+            const img = imgGen(caso, s, esProcedente);
 
-            if (positivos >= 2) {
-                result.innerHTML = `
-            <h3>⚖️ Diagnóstico Legal</h3>
-            <p><b>${caso}</b></p>
-            <p>Se detectan indicios claros de conflicto laboral.</p>
-            <p>📌 Recomendación: Acudir a la Procuraduría de la Defensa del Trabajo.</p>
-        `;
-            } else {
-                result.innerHTML = `
-            <h3>ℹ️ Resultado</h3>
-            <p>No se detectan suficientes elementos para un conflicto grave.</p>
-        `;
-            }
+            saveHistory(caso, s, img, statusText);
+
+            $("res").innerHTML = `
+                <div class="card" style="border-left: 10px solid ${esProcedente ? '#2563eb' : '#ef4444'}">
+                    <h2 style="color: ${esProcedente ? '#2563eb' : '#ef4444'}">${statusText}</h2>
+                    <p>Análisis completado para el caso de <b>${caso}</b>.</p>
+                    <img src="${img}">
+                </div>`;
         }
+
+        /* ===== CANVAS (CERTIFICADO) ===== */
+        function imgGen(caso, s, esProcedente) {
+            const canvas = document.createElement("canvas");
+            canvas.width = 500; canvas.height = 250;
+            const ctx = canvas.getContext("2d");
+
+            const color = esProcedente ? "#2563eb" : "#ef4444";
+
+            // Fondo y borde
+            ctx.fillStyle = esProcedente ? "#f0f7ff" : "#fff5f5";
+            ctx.fillRect(0, 0, 500, 250);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 10;
+            ctx.strokeRect(5, 5, 490, 240);
+
+            // Texto
+            ctx.fillStyle = color;
+            ctx.font = "bold 26px Arial";
+            ctx.fillText("DIAGNÓSTICO LEGAL", 110, 50);
+
+            ctx.fillStyle = "#1e293b";
+            ctx.font = "20px Arial";
+            ctx.fillText("Resultado: " + (esProcedente ? "Procedente" : "No Procedente"), 50, 110);
+            ctx.fillText("Caso: " + caso, 50, 150);
+            ctx.fillText("Puntaje Técnico: " + s + " pts", 50, 190);
+
+            return canvas.toDataURL();
+        }
+
+        /* ===== PERSISTENCIA ===== */
+        function saveHistory(caso, s, img, status) {
+            let user = JSON.parse(localStorage.getItem("activeUser"));
+            const record = { caso, s, img, status, date: new Date().toLocaleString() };
+            user.history.unshift(record);
+
+            localStorage.setItem("activeUser", JSON.stringify(user));
+
+            const users = JSON.parse(localStorage.getItem("users"));
+            const idx = users.findIndex(u => u.username === user.username);
+            users[idx].history = user.history;
+            localStorage.setItem("users", JSON.stringify(users));
+        }
+
+        /* ===== MI PERFIL ===== */
+        function profile() {
+            const user = JSON.parse(localStorage.getItem("activeUser"));
+            $("content").innerHTML = `
+                <h2>👤 Mi Perfil</h2>
+                <div class="card">
+                    <img src="${user.photo || 'https://www.w3schools.com/howto/img_avatar.png'}" class="profile-img" id="pImg">
+                    <input type="file" accept="image/*" onchange="updatePhoto(event)">
+                    <p><b>Nombre:</b> ${user.name}</p>
+                    <p><b>Usuario:</b> ${user.username}</p>
+                    <p><b>Email:</b> ${user.email}</p>
+                </div>
+                <h3>📜 Historial de Casos</h3>
+                <div id="histList"></div>
+            `;
+            loadHistList();
+        }
+
+        function loadHistList() {
+            const user = JSON.parse(localStorage.getItem("activeUser"));
+            if (!user.history.length) return $("histList").innerHTML = "No hay registros.";
+
+            $("histList").innerHTML = user.history.map(h => `
+                <div class="card" style="border-left: 5px solid ${h.status === 'PROCEDENTE' ? '#2563eb' : '#ef4444'}">
+                    <p><b>${h.caso}</b> - ${h.date}</p>
+                    <img src="${h.img}" style="width: 200px">
+                </div>
+            `).join("");
+        }
+
+        function updatePhoto(e) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                let user = JSON.parse(localStorage.getItem("activeUser"));
+                user.photo = reader.result;
+                localStorage.setItem("activeUser", JSON.stringify(user));
+                $("pImg").src = reader.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        /* ===== CONFIGURACIÓN (10+ OPCIONES) ===== */
+        function settings() {
+            $("content").innerHTML = `
+                <h2>⚙️ Configuración de IU</h2>
+                <div class="card">
+                    <h3>Visualización</h3>
+                    <div class="setting"><span>Modo Oscuro</span> <select onchange="document.body.className=this.value"><option value="">Claro</option><option value="dark">Oscuro</option></select></div>
+                    <div class="setting"><span>Color Primario</span> <input type="color" value="#2563eb" onchange="document.documentElement.style.setProperty('--primary',this.value)"></div>
+                    <div class="setting"><span>Color de Barra Lateral</span> <input type="color" value="#1e293b" onchange="document.documentElement.style.setProperty('--secondary',this.value)"></div>
+                    
+                    <h3>Tipografía</h3>
+                    <div class="setting"><span>Tipo de Letra</span> <select onchange="document.body.style.fontFamily=this.value"><option value="Segoe UI">Segoe UI</option><option value="Georgia">Elegante</option><option value="monospace">Sistema</option></select></div>
+                    <div class="setting"><span>Tamaño de Letra</span> <select onchange="document.body.style.fontSize=this.value"><option value="14px">Pequeño</option><option value="16px" selected>Normal</option><option value="18px">Grande</option></select></div>
+                    <div class="setting"><span>Espaciado entre líneas</span> <select onchange="document.body.style.lineHeight=this.value"><option value="1">Compacto</option><option value="1.6" selected>Normal</option><option value="2">Amplio</option></select></div>
+
+                    <h3>Estructura</h3>
+                    <div class="setting"><span>Redondeado (Bordes)</span> <select onchange="document.documentElement.style.setProperty('--radius',this.value)"><option value="0px">Cuadrado</option><option value="14px" selected>Redondeado</option><option value="30px">Cápsula</option></select></div>
+                    <div class="setting"><span>Posición Sidebar</span> <select onchange="$('app').style.flexDirection=this.value"><option value="row">Izquierda</option><option value="row-reverse">Derecha</option></select></div>
+                    <div class="setting"><span>Ancho máximo</span> <select onchange="document.body.style.maxWidth=this.value; document.body.style.margin='auto'"><option value="100%">Completo</option><option value="1200px">Centrado</option></select></div>
+                    <div class="setting"><span>Animaciones</span> <select onchange="document.body.style.transition=this.value==='on'?'.3s':'0s'"><option value="on">Activadas</option><option value="off">Desactivadas</option></select></div>
+                    <div class="setting"><span>Sombra de Tarjetas</span> <select onchange="const cards=document.querySelectorAll('.card'); cards.forEach(c=>c.style.boxShadow=this.value)"><option value="none">Plano</option><option value="0 4px 15px rgba(0,0,0,0.05)" selected>Suave</option><option value="0 10px 30px rgba(0,0,0,0.2)">Fuerte</option></select></div>
+                </div>
+            `;
+        }
+
+        // Auto-login al cargar
+        window.onload = () => {
+            if (localStorage.getItem("activeUser")) showApp();
+        };
     </script>
-
 </body>
 
 </html>
