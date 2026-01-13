@@ -35,7 +35,6 @@
             color: var(--text);
             transition: background 0.3s, color 0.3s, font-size 0.2s;
             max-width: 100%;
-            /* Personalizable en settings */
         }
 
         /* ===== AUTENTICACIÓN ===== */
@@ -58,7 +57,6 @@
         /* ===== LAYOUT PRINCIPAL ===== */
         .container {
             display: none;
-            /* Se activa al loguear */
             height: 100vh;
             flex-direction: row;
         }
@@ -354,50 +352,39 @@
                 </div>`;
         }
 
-        /* ===== CANVAS (CERTIFICADO) ===== */
         function imgGen(caso, s, esProcedente) {
             const canvas = document.createElement("canvas");
             canvas.width = 500; canvas.height = 250;
             const ctx = canvas.getContext("2d");
-
             const color = esProcedente ? "#2563eb" : "#ef4444";
-
-            // Fondo y borde
             ctx.fillStyle = esProcedente ? "#f0f7ff" : "#fff5f5";
             ctx.fillRect(0, 0, 500, 250);
             ctx.strokeStyle = color;
             ctx.lineWidth = 10;
             ctx.strokeRect(5, 5, 490, 240);
-
-            // Texto
             ctx.fillStyle = color;
             ctx.font = "bold 26px Arial";
             ctx.fillText("DIAGNÓSTICO LEGAL", 110, 50);
-
             ctx.fillStyle = "#1e293b";
             ctx.font = "20px Arial";
             ctx.fillText("Resultado: " + (esProcedente ? "Procedente" : "No Procedente"), 50, 110);
             ctx.fillText("Caso: " + caso, 50, 150);
             ctx.fillText("Puntaje Técnico: " + s + " pts", 50, 190);
-
             return canvas.toDataURL();
         }
 
-        /* ===== PERSISTENCIA ===== */
         function saveHistory(caso, s, img, status) {
             let user = JSON.parse(localStorage.getItem("activeUser"));
             const record = { caso, s, img, status, date: new Date().toLocaleString() };
             user.history.unshift(record);
-
             localStorage.setItem("activeUser", JSON.stringify(user));
-
             const users = JSON.parse(localStorage.getItem("users"));
             const idx = users.findIndex(u => u.username === user.username);
             users[idx].history = user.history;
             localStorage.setItem("users", JSON.stringify(users));
         }
 
-        /* ===== MI PERFIL ===== */
+        /* ===== MI PERFIL (MODIFICADO) ===== */
         function profile() {
             const user = JSON.parse(localStorage.getItem("activeUser"));
             $("content").innerHTML = `
@@ -409,16 +396,35 @@
                     <p><b>Usuario:</b> ${user.username}</p>
                     <p><b>Email:</b> ${user.email}</p>
                 </div>
-                <h3>📜 Historial de Casos</h3>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+                    <h3>📜 Historial de Casos</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="window.print()" style="width: auto; background: #64748b; padding: 5px 15px;">Descargar PDF</button>
+                        <button onclick="clearHistory()" style="width: auto; background: #ef4444; padding: 5px 15px;">Borrar Historial</button>
+                    </div>
+                </div>
                 <div id="histList"></div>
             `;
             loadHistList();
         }
 
+        function clearHistory() {
+            if (confirm("¿Eliminar todo el historial?")) {
+                let user = JSON.parse(localStorage.getItem("activeUser"));
+                user.history = [];
+                localStorage.setItem("activeUser", JSON.stringify(user));
+                const users = JSON.parse(localStorage.getItem("users"));
+                const idx = users.findIndex(u => u.username === user.username);
+                users[idx].history = [];
+                localStorage.setItem("users", JSON.stringify(users));
+                profile();
+            }
+        }
+
         function loadHistList() {
             const user = JSON.parse(localStorage.getItem("activeUser"));
             if (!user.history.length) return $("histList").innerHTML = "No hay registros.";
-
             $("histList").innerHTML = user.history.map(h => `
                 <div class="card" style="border-left: 5px solid ${h.status === 'PROCEDENTE' ? '#2563eb' : '#ef4444'}">
                     <p><b>${h.caso}</b> - ${h.date}</p>
@@ -438,35 +444,129 @@
             reader.readAsDataURL(e.target.files[0]);
         }
 
-        /* ===== CONFIGURACIÓN (10+ OPCIONES) ===== */
+        /* ===== CONFIGURACIÓN AVANZADA ===== */
+        /* ===== CONFIGURACIÓN AVANZADA DE IU ===== */
         function settings() {
             $("content").innerHTML = `
-                <h2>⚙️ Configuración de IU</h2>
-                <div class="card">
-                    <h3>Visualización</h3>
-                    <div class="setting"><span>Modo Oscuro</span> <select onchange="document.body.className=this.value"><option value="">Claro</option><option value="dark">Oscuro</option></select></div>
-                    <div class="setting"><span>Color Primario</span> <input type="color" value="#2563eb" onchange="document.documentElement.style.setProperty('--primary',this.value)"></div>
-                    <div class="setting"><span>Color de Barra Lateral</span> <input type="color" value="#1e293b" onchange="document.documentElement.style.setProperty('--secondary',this.value)"></div>
-                    
-                    <h3>Tipografía</h3>
-                    <div class="setting"><span>Tipo de Letra</span> <select onchange="document.body.style.fontFamily=this.value"><option value="Segoe UI">Segoe UI</option><option value="Georgia">Elegante</option><option value="monospace">Sistema</option></select></div>
-                    <div class="setting"><span>Tamaño de Letra</span> <select onchange="document.body.style.fontSize=this.value"><option value="14px">Pequeño</option><option value="16px" selected>Normal</option><option value="18px">Grande</option></select></div>
-                    <div class="setting"><span>Espaciado entre líneas</span> <select onchange="document.body.style.lineHeight=this.value"><option value="1">Compacto</option><option value="1.6" selected>Normal</option><option value="2">Amplio</option></select></div>
+        <h2>⚙️ Personalización de la Interfaz</h2>
+        <p>Ajusta la apariencia de LegalApp a tu gusto. Los cambios se aplican en tiempo real.</p>
 
-                    <h3>Estructura</h3>
-                    <div class="setting"><span>Redondeado (Bordes)</span> <select onchange="document.documentElement.style.setProperty('--radius',this.value)"><option value="0px">Cuadrado</option><option value="14px" selected>Redondeado</option><option value="30px">Cápsula</option></select></div>
-                    <div class="setting"><span>Posición Sidebar</span> <select onchange="$('app').style.flexDirection=this.value"><option value="row">Izquierda</option><option value="row-reverse">Derecha</option></select></div>
-                    <div class="setting"><span>Ancho máximo</span> <select onchange="document.body.style.maxWidth=this.value; document.body.style.margin='auto'"><option value="100%">Completo</option><option value="1200px">Centrado</option></select></div>
-                    <div class="setting"><span>Animaciones</span> <select onchange="document.body.style.transition=this.value==='on'?'.3s':'0s'"><option value="on">Activadas</option><option value="off">Desactivadas</option></select></div>
-                    <div class="setting"><span>Sombra de Tarjetas</span> <select onchange="const cards=document.querySelectorAll('.card'); cards.forEach(c=>c.style.boxShadow=this.value)"><option value="none">Plano</option><option value="0 4px 15px rgba(0,0,0,0.05)" selected>Suave</option><option value="0 10px 30px rgba(0,0,0,0.2)">Fuerte</option></select></div>
-                </div>
-            `;
+        <div class="card">
+            <h3>🎨 Colores y Temas</h3>
+            
+            <div class="setting">
+                <span>🌗 Modo de Color</span>
+                <select onchange="document.body.className = this.value">
+                    <option value="">☀️ Claro</option>
+                    <option value="dark">🌙 Oscuro</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>🔵 Color Primario (Botones y Enlaces)</span>
+                <input type="color" value="#2563eb" 
+                    onchange="document.documentElement.style.setProperty('--primary', this.value)">
+            </div>
+
+            <div class="setting">
+                <span>🌑 Color Secundario (Barra Lateral)</span>
+                <input type="color" value="#1e293b" 
+                    onchange="document.documentElement.style.setProperty('--secondary', this.value)">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔤 Tipografía y Texto</h3>
+
+            <div class="setting">
+                <span>🔡 Fuente del Sistema</span>
+                <select onchange="document.body.style.fontFamily = this.value">
+                    <option value="'Segoe UI', system-ui">Predeterminada</option>
+                    <option value="'Courier New', monospace">Monoespaciada</option>
+                    <option value="'Georgia', serif">Elegante (Serif)</option>
+                    <option value="'Arial', sans-serif">Limpia (Arial)</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>📏 Tamaño de Fuente</span>
+                <select onchange="document.body.style.fontSize = this.value">
+                    <option value="14px">Pequeño</option>
+                    <option value="16px" selected>Normal</option>
+                    <option value="18px">Grande</option>
+                    <option value="20px">Muy Grande</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>↕️ Espaciado entre líneas (Lectura)</span>
+                <select onchange="document.body.style.lineHeight = this.value">
+                    <option value="1.2">Compacto</option>
+                    <option value="1.6" selected>Normal</option>
+                    <option value="2">Espacioso</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📐 Diseño y Estructura</h3>
+
+            <div class="setting">
+                <span>🔄 Posición de la Barra Lateral</span>
+                <select onchange="document.getElementById('app').style.flexDirection = this.value">
+                    <option value="row">Izquierda</option>
+                    <option value="row-reverse">Derecha</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>🖥️ Ancho de la Aplicación</span>
+                <select onchange="document.body.style.maxWidth = this.value; document.body.style.margin = 'auto'">
+                    <option value="100%">Ancho Completo</option>
+                    <option value="1200px">Centrado (Boxed)</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>🧈 Redondeado de Esquinas (Bordes)</span>
+                <select onchange="document.documentElement.style.setProperty('--radius', this.value)">
+                    <option value="0px">Cuadrado</option>
+                    <option value="8px">Suave</option>
+                    <option value="14px" selected>Redondeado</option>
+                    <option value="30px">Muy Redondeado</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>✨ Efectos Visuales</h3>
+
+            <div class="setting">
+                <span>🎬 Animaciones de Interfaz</span>
+                <select onchange="document.body.style.transition = this.value == 'on' ? '.3s' : '0s'">
+                    <option value="on">Activadas</option>
+                    <option value="off">Desactivadas</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>👤 Sombreado de Tarjetas</span>
+                <select onchange="const cards = document.querySelectorAll('.card'); 
+                    cards.forEach(c => c.style.boxShadow = this.value)">
+                    <option value="none">Sin sombra</option>
+                    <option value="0 5px 20px rgba(0,0,0,0.08)">Sutil</option>
+                    <option value="0 15px 35px rgba(0,0,0,0.2)">Pronunciada</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <span>🔍 Opacidad de la Barra Lateral</span>
+                <input type="range" min="0.5" max="1" step="0.1" value="1" 
+                    onchange="document.querySelector('.sidebar').style.opacity = this.value">
+            </div>
+        </div>
+    `;
         }
-
-        // Auto-login al cargar
-        window.onload = () => {
-            if (localStorage.getItem("activeUser")) showApp();
-        };
     </script>
 </body>
 
